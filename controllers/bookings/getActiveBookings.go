@@ -9,8 +9,11 @@ import (
 )
 
 type bookingDetails struct {
-	BookRefNo       *string `json:"bookRefNo"`
-	BookPassengerNm *string `json:"bookPassengerNm"`
+	BookRefNo       *string
+	BookPassengerNm *string
+	DriverName      *string
+	DriverContact   *string
+	JobStatus       *string
 }
 
 func GetActiveBookings(c *gin.Context) {
@@ -18,14 +21,14 @@ func GetActiveBookings(c *gin.Context) {
 	var bookings []bookingDetails
 
 	query := `
-		SELECT
+	SELECT 
+
     BookRefNo,
     BookPassengerNm
-FROM
+
+	FROM
+
     Tbl_BookingDetails
-ORDER BY
-    BookRefNo
-OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
 
 	`
 

@@ -1,9 +1,9 @@
 package main
 
 import (
+	controllers "spotoncars_server/controllers/bookings"
 	"spotoncars_server/initializers"
 	"spotoncars_server/middleware"
-	"spotoncars_server/routes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,11 +15,10 @@ func init() {
 }
 
 func main() {
-	router := gin.New()
-
+	router := gin.Default()
 	router.Use(middleware.AuthenticationGuard)
-	routes.SetupRoutes(router)
 
+	router.GET("/bookings/active", controllers.GetActiveBookings)
 	router.Run()
 
 }
