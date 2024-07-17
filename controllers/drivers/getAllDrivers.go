@@ -1,10 +1,14 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"spotoncars_server/initializers"
 
+	"os"
+
+	"github.com/OneSignal/onesignal-go-api"
 	"github.com/gin-gonic/gin"
 )
 
@@ -66,7 +70,52 @@ WHERE
 		return
 	}
 
+	successMessage, err, _ := sendNotification()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed"})
+		return
+
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"drivers": drivers,
+		"drivers":        drivers,
+		"successMessage": successMessage,
 	})
+}
+
+func sendNotification() (string, error, *onesignal.CreateNotificationSuccessResponse) {
+	notification := *onesignal.NewNotification(os.Getenv("ONE_SIGNAL_APP_ID"))
+
+	// Optionally, include external user IDs if provided
+
+	// notification.SetIncludeExternalUserIds([]string{"344"})
+	notification.IncludedSegments = []string{"All"} // Target all users
+
+	englishMessage := "This is a notification in English!"
+	contents := onesignal.StringMap{
+		En: &englishMessage,
+	}
+
+	notification.SetContents(contents)
+
+	configuration := onesignal.NewConfiguration()
+
+	apiClient := onesignal.NewAPIClient(configuration)
+
+	appAuth := context.WithValue(context.Background(), onesignal.AppAuth, os.Getenv("ONE_SIGNAL_APP_KEY"))
+
+	resp, r, err := apiClient.DefaultApi.CreateNotification(appAuth).Notification(notification).Execute()
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `DefaultApi.CreateNotification`: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+		return "", err, nil
+	}
+
+	// Print response from `CreateNotification`
+	fmt.Fprintf(os.Stdout, "Response from `DefaultApi.CreateNotification`: %v\n", resp)
+
+	// Return success message, error, and response
+	return "Notification sent successfully", nil, resp
 }
