@@ -19,6 +19,8 @@ func main() {
 	router.Use(middleware.AuthenticationGuard)
 
 	router.GET("/bookings/active", controllers.GetActiveBookings)
+	router.GET("/bookings/history", controllers.GetBookingsHistory)
+
 	router.Run()
 
 }
