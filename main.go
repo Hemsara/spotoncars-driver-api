@@ -29,8 +29,6 @@ func main() {
 
 	router.GET("/drivers", dvrController.GetAllDrivers)
 
-
-
 	router.Run()
 
 }
