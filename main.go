@@ -1,7 +1,9 @@
 package main
 
 import (
-	controllers "spotoncars_server/controllers/bookings"
+	bookingController "spotoncars_server/controllers/bookings"
+	dvrController "spotoncars_server/controllers/drivers"
+
 	"spotoncars_server/initializers"
 	"spotoncars_server/middleware"
 
@@ -18,8 +20,10 @@ func main() {
 	router := gin.Default()
 	router.Use(middleware.AuthenticationGuard)
 
-	router.GET("/bookings/active", controllers.GetActiveBookings)
-	router.GET("/bookings/history", controllers.GetBookingsHistory)
+	router.GET("/bookings/active", bookingController.GetActiveBookings)
+	router.GET("/bookings/history", bookingController.GetBookingsHistory)
+
+	router.GET("/drivers", dvrController.GetAllDrivers)
 
 	router.Run()
 
