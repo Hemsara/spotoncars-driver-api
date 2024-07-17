@@ -3,8 +3,10 @@ package internal
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 func Validate(str string) (isValid bool, token *jwt.Token, err error) {
@@ -26,4 +28,30 @@ func Validate(str string) (isValid bool, token *jwt.Token, err error) {
 	}
 
 	return true, token, nil
+}
+
+func CreateToken(
+	driverPK string,
+	userName string,
+	duration time.Duration,
+) (id uuid.UUID, token string, err error) {
+	now := time.Now().UTC()
+
+	id, err = uuid.NewUUID()
+	if err != nil {
+		return uuid.UUID{}, "", err
+	}
+
+	claims := make(jwt.MapClaims)
+
+	claims["sub"] = id.String()
+	claims["exp"] = now.Add(duration).Unix()
+	claims["username"] = userName
+
+	token, err = jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(os.Getenv("ADMIN_TOKEN_SECRET")))
+	if err != nil {
+		return uuid.UUID{}, "", err
+	}
+
+	return id, token, nil
 }
