@@ -4,6 +4,7 @@ import (
 	authController "spotoncars_server/controllers/auth"
 	bookingController "spotoncars_server/controllers/bookings"
 	dvrController "spotoncars_server/controllers/drivers"
+	alertController "spotoncars_server/controllers/notifications"
 
 	"spotoncars_server/initializers"
 	"spotoncars_server/middleware"
@@ -14,21 +15,39 @@ import (
 func init() {
 	initializers.LoadENV()
 	initializers.InitDB()
-
 }
 
 func main() {
 	router := gin.Default()
 
-	router.POST("/login", authController.LoginAdmin)
+	// Authentication routes
+	authRoutes := router.Group("/auth")
+	{
+		authRoutes.POST("/login", authController.LoginAdmin)
+	}
 
-	router.Use(middleware.AuthenticationGuard)
+	// Apply middleware to protected routes
+	protectedRoutes := router.Group("/")
+	protectedRoutes.Use(middleware.AuthenticationGuard)
+	{
+		// Booking routes
+		bookingRoutes := protectedRoutes.Group("/bookings")
+		{
+			bookingRoutes.GET("/active", bookingController.GetActiveBookings)
+			bookingRoutes.GET("/history", bookingController.GetBookingsHistory)
+		}
 
-	router.GET("/bookings/active", bookingController.GetActiveBookings)
-	router.GET("/bookings/history", bookingController.GetBookingsHistory)
+		// Driver routes
+		driverRoutes := protectedRoutes.Group("/drivers")
+		{
+			driverRoutes.GET("", dvrController.GetAllDrivers)
+		}
 
-	router.GET("/drivers", dvrController.GetAllDrivers)
+		alertRoutes := protectedRoutes.Group("/alerts")
+		{
+			alertRoutes.POST("", alertController.SendNotification)
+		}
+	}
 
 	router.Run()
-
 }

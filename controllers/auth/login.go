@@ -67,18 +67,8 @@ func LoginAdmin(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to generate token"})
 		return
 	}
-	externalIDs := []string{"344"}
-	message := "[TEST] Hello, You have been logged in from new device"
 
-	successMessage, _, err := internal.SendNotification(externalIDs, message)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed"})
-		return
-
-	}
 	c.JSON(http.StatusOK, gin.H{
-		"access_token":   accessToken,
-		"successMessage": successMessage,
+		"access_token": accessToken,
 	})
 }

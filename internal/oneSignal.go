@@ -8,19 +8,18 @@ import (
 	"github.com/OneSignal/onesignal-go-api"
 )
 
-func SendNotification(externalIDs []string, message string) (string, *onesignal.CreateNotificationSuccessResponse, error) {
+func SendNotification(externalIDs []string, message string) (bool, *onesignal.CreateNotificationSuccessResponse, error) {
 	notification := *onesignal.NewNotification(os.Getenv("ONE_SIGNAL_APP_ID"))
 
-	// Optionally, include external user IDs if provided
+	externalIDArr := []string{"344"}
+	notification.SetIncludeExternalUserIds(externalIDArr)
 
-	// notification.SetIncludeExternalUserIds([]string{"344"})
-	notification.IncludedSegments = []string{"All"} // Target all users
+	fmt.Println(externalIDs)
 
 	englishMessage := message
 	contents := onesignal.StringMap{
 		En: &englishMessage,
 	}
-
 	notification.SetContents(contents)
 
 	configuration := onesignal.NewConfiguration()
@@ -34,10 +33,10 @@ func SendNotification(externalIDs []string, message string) (string, *onesignal.
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error when calling `DefaultApi.CreateNotification`: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-		return "", nil, err
+		return false, nil, err
 	}
 
 	fmt.Fprintf(os.Stdout, "Response from `DefaultApi.CreateNotification`: %v\n", resp)
 
-	return "Notification sent successfully", resp, nil
+	return true, resp, nil
 }
