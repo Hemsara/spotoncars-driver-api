@@ -41,6 +41,8 @@ func main() {
 		driverRoutes := protectedRoutes.Group("/drivers")
 		{
 			driverRoutes.GET("", dvrController.GetAllDrivers)
+			driverRoutes.POST("log", dvrController.LogDriver)
+
 		}
 
 		alertRoutes := protectedRoutes.Group("/alerts")
