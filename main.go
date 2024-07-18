@@ -27,7 +27,16 @@ func main() {
 	}
 
 	// Apply middleware to protected routes
+
+	protectedRoutesDriverApp := router.Group("/driverApp")
+	protectedRoutesDriverApp.Use(middleware.DriverAuthenticationGuard)
+	{
+		driverAppRoutes := protectedRoutesDriverApp.Group("/drivers")
+		driverAppRoutes.POST("/log", dvrController.LogDriver)
+
+	}
 	protectedRoutes := router.Group("/")
+
 	protectedRoutes.Use(middleware.AuthenticationGuard)
 	{
 		// Booking routes
@@ -41,7 +50,6 @@ func main() {
 		driverRoutes := protectedRoutes.Group("/drivers")
 		{
 			driverRoutes.GET("", dvrController.GetAllDrivers)
-			driverRoutes.POST("log", dvrController.LogDriver)
 
 		}
 

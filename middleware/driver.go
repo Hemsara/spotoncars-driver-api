@@ -1,17 +1,16 @@
 package middleware
 
 import (
-	"fmt"
+	"os"
 	"spotoncars_server/internal"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AuthenticationGuard(c *gin.Context) {
+func DriverAuthenticationGuard(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 
-	fmt.Println(authHeader)
 	if authHeader == "" {
 		c.AbortWithStatusJSON(401, gin.H{
 			"error": "No authorization header",
@@ -28,7 +27,7 @@ func AuthenticationGuard(c *gin.Context) {
 	}
 
 	token := headerParts[1]
-	isValid, _, _, _ := internal.Validate(token, false)
+	isValid, _, _, clm := internal.Validate(token, true)
 
 	if !isValid {
 		c.AbortWithStatusJSON(401, gin.H{
@@ -37,5 +36,14 @@ func AuthenticationGuard(c *gin.Context) {
 		return
 	}
 
+	sid, ok := clm[os.Getenv("TOKEN_CLAIM")].(string)
+	if !ok {
+		c.AbortWithStatusJSON(401, gin.H{
+			"error": "SID claim not found",
+		})
+		return
+	}
+
+	c.Set("sid", sid)
 	c.Next()
 }

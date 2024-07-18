@@ -9,25 +9,30 @@ import (
 	"github.com/google/uuid"
 )
 
-func Validate(str string) (isValid bool, token *jwt.Token, err error) {
+func Validate(str string, dvr bool) (isValid bool, token *jwt.Token, err error, claims jwt.MapClaims) {
 	token, err = jwt.Parse(str, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("invalid signing algorithm was used")
 		}
-
-		return []byte(os.Getenv("ADMIN_TOKEN_SECRET")), nil
+		var secretKey string
+		if dvr {
+			secretKey = os.Getenv("APCON_SECRET")
+		} else {
+			secretKey = os.Getenv("ADMIN_TOKEN_SECRET")
+		}
+		return []byte(secretKey), nil
 	})
 
 	if err != nil {
-		return false, nil, err
+		return false, nil, err, nil
 	}
 
-	_, ok := token.Claims.(jwt.MapClaims)
+	clm, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return false, nil, fmt.Errorf("invalid token")
+		return false, nil, fmt.Errorf("invalid token"), nil
 	}
 
-	return true, token, nil
+	return true, token, nil, clm
 }
 
 func CreateToken(

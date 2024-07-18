@@ -10,7 +10,6 @@ import (
 )
 
 type LogRequest struct {
-	DvrPk      string `json:"dvrPk"`
 	AppVersion string `json:"appVersion"`
 }
 
@@ -18,6 +17,11 @@ func LogDriver(c *gin.Context) {
 	var req LogRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+	sid, exists := c.Get("sid")
+	if !exists {
+		c.JSON(500, gin.H{"error": "SID not found in context"})
 		return
 	}
 
@@ -40,7 +44,7 @@ func LogDriver(c *gin.Context) {
 	defer stmt.Close()
 
 	lastLogin := time.Now().Format(time.RFC3339)
-	rows, err := stmt.Query(sql.Named("DvrPk", req.DvrPk), sql.Named("AppVersion", req.AppVersion), sql.Named("LastLogin", lastLogin))
+	rows, err := stmt.Query(sql.Named("DvrPk", sid), sql.Named("AppVersion", req.AppVersion), sql.Named("LastLogin", lastLogin))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Query execution error"})
 		return
