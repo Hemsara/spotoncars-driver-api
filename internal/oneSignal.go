@@ -11,7 +11,7 @@ import (
 func SendNotification(externalIDs []string, message string) (bool, *onesignal.CreateNotificationSuccessResponse, error) {
 	notification := *onesignal.NewNotification(os.Getenv("ONE_SIGNAL_APP_ID"))
 
-	externalIDArr := []string{"344"}
+	externalIDArr := externalIDs
 	notification.SetIncludeExternalUserIds(externalIDArr)
 
 	fmt.Println(externalIDs)

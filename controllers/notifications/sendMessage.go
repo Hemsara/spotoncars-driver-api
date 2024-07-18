@@ -20,6 +20,8 @@ func SendNotification(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 		return
 	}
+
+	print(req.DriverIDs)
 	externalID := req.DriverIDs
 	message := req.Message
 
@@ -52,7 +54,7 @@ func SendNotification(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"message": "success",
+		"message": isSent,
 	})
 
 }
