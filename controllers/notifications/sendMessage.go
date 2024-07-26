@@ -21,7 +21,6 @@ func SendNotification(c *gin.Context) {
 		return
 	}
 
-	print(req.DriverIDs)
 	externalID := req.DriverIDs
 	message := req.Message
 

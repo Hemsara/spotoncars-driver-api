@@ -35,4 +35,5 @@ func InitDB() {
 	if err := DB.Ping(); err != nil {
 		log.Fatalf("Failed to ping DB: %v", err)
 	}
+
 }
