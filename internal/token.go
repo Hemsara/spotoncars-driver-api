@@ -1,13 +1,17 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"spotoncars_server/initializers"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
+
+var ctx = context.Background()
 
 func Validate(str string, dvr bool) (isValid bool, token *jwt.Token, err error, claims jwt.MapClaims) {
 	token, err = jwt.Parse(str, func(t *jwt.Token) (interface{}, error) {
@@ -32,7 +36,28 @@ func Validate(str string, dvr bool) (isValid bool, token *jwt.Token, err error, 
 		return false, nil, fmt.Errorf("invalid token"), nil
 	}
 
+	sub, ok := clm["sub"].(string)
+	if !ok {
+		return false, nil, fmt.Errorf("subject claim is not a string"), nil
+	}
+	exist := ValidateFromRedis(sub)
+
+	if !exist {
+		return false, nil, fmt.Errorf("token revoked from redis"), nil
+	}
+
 	return true, token, nil, clm
+}
+
+func ValidateFromRedis(uuid string) (isValid bool) {
+	_, err := initializers.RD.Get(ctx, uuid).Result()
+
+	if err != nil {
+		return false
+	}
+
+	return true
+
 }
 
 func CreateToken(
@@ -57,6 +82,14 @@ func CreateToken(
 	if err != nil {
 		return uuid.UUID{}, "", err
 	}
+	if err := SaveTokenToRedis(id.String(), token, duration); err != nil {
+		return uuid.UUID{}, "", err
+	}
 
 	return id, token, nil
+}
+
+func SaveTokenToRedis(key, token string, expiration time.Duration) error {
+	client := initializers.RD
+	return client.Set(ctx, key, token, expiration).Err()
 }

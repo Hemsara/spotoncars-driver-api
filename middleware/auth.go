@@ -28,11 +28,11 @@ func AuthenticationGuard(c *gin.Context) {
 	}
 
 	token := headerParts[1]
-	isValid, _, _, _ := internal.Validate(token, false)
+	isValid, _, err, _ := internal.Validate(token, false)
 
 	if !isValid {
 		c.AbortWithStatusJSON(401, gin.H{
-			"error": "Invalid token",
+			"error": err.Error(),
 		})
 		return
 	}

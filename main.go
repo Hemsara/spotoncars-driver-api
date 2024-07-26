@@ -10,6 +10,8 @@ import (
 func init() {
 	initializers.LoadENV()
 	initializers.InitDB()
+	initializers.InitRedis()
+
 }
 
 func main() {
